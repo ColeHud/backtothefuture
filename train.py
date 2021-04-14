@@ -3,21 +3,16 @@ import time
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import png
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torchsummary import summary
 from PIL import Image
 import torchvision
-from colormap.colors import Color, hex2rgb
-from sklearn.metrics import average_precision_score as ap_score
 from torch.utils.data import DataLoader
 from torchvision import datasets, models
 from torchvision import transforms as transforms
 from torch.utils.data.dataset import Dataset
-from tqdm import tqdm
-from colorizer import Colorizer
+# from colorizer import Colorizer
 import argparse
 from dataset import ImageFolder
 
@@ -45,16 +40,15 @@ def init_arguments():
     return parser.parse_args()
 
 def init_transform(args):
+    # if we flip, then need to flip both
     transform_grey = transforms.Compose([
-            transforms.Resize(args.image_size), 
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
             transforms.Grayscale(num_output_channels=1),
-            transforms.Normalize(mean=(0.5,0.5,0.5), std=(0.5,0.5,0.5))
+            transforms.Resize([args.image_size, args.image_size]),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=(0.5), std=(0.5))
         ])
     transform_RGB = transforms.Compose([
-            transforms.Resize(args.image_size), 
-            transforms.RandomHorizontalFlip(),
+            transforms.Resize([args.image_size, args.image_size]),
             transforms.ToTensor(),
             transforms.Normalize(mean=(0.5,0.5,0.5), std=(0.5,0.5,0.5))
         ])
@@ -77,6 +71,10 @@ if __name__ == "__main__":
     for idx, data in enumerate(dataloader):
         grey = data[0]
         rgb = data[1]
+        plt.imshow(torch.squeeze(grey[0]), cmap='gray')
+        plt.show()
+        plt.imshow(rgb[0, 0, :, :], cmap='gray')
+        plt.show()
         print(grey.shape)
 
     original_data = torchvision.datasets.ImageFolder(args.data_path, transform)
