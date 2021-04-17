@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "train.py", line 77, in <module>
+    plt.imshow(torch.squeeze(rgb[0]))
+  File "D:\Anaconda3\envs\pytorch\lib\site-packages\matplotlib\pyplot.py", line 2684, in imshow
+    None else {}), **kwargs)
+  File "D:\Anaconda3\envs\pytorch\lib\site-packages\matplotlib\__init__.py", line 1599, in inner
+    return func(ax, *map(sanitize_sequence, args), **kwargs)
+  File "D:\Anaconda3\envs\pytorch\lib\site-packages\matplotlib\cbook\deprecation.py", line 369, in wrapper
+    return func(*args, **kwargs)
+  File "D:\Anaconda3\envs\pytorch\lib\site-packages\matplotlib\cbook\deprecation.py", line 369, in wrapper
+    return func(*args, **kwargs)
+  File "D:\Anaconda3\envs\pytorch\lib\site-packages\matplotlib\axes\_axes.py", line 5679, in imshow
+    im.set_data(X)
+  File "D:\Anaconda3\envs\pytorch\lib\site-packages\matplotlib\image.py", line 690, in set_data
+    .format(self._A.shape))
+TypeError: Invalid shape (3, 64, 64) for image data
