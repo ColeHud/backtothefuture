@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.optim as optim
 from PIL import Image
 import torchvision
-from torch.utils.data import DataLoader
+from torch.utils.data import Subset, DataLoader
 from torchvision import datasets, models
 from torchvision import transforms as transforms
 from torch.utils.data.dataset import Dataset
@@ -54,6 +54,49 @@ def init_transform(args):
         ])
     return [transform_grey, transform_RGB]
 
+def train(model, trainloader, valloader, num_epoch = 10): # Train the model
+  print("Start training...")
+  trn_loss_hist = []
+  trn_acc_hist = []
+  val_acc_hist = []
+  model.train() # Set the model to training mode
+  for i in range(num_epoch):
+    running_loss = []
+    print('-----------------Epoch = %d-----------------' % (i+1))
+    for batch, label in tqdm(trainloader):
+      batch = batch.to(device)
+      label = label.to(device)
+      optimizer.zero_grad() # Clear gradients from the previous iteration
+      pred = model(batch) # This will call Network.forward() that you implement
+      loss = criterion(pred, label) # Calculate the loss
+      running_loss.append(loss.item())
+      loss.backward() # Backprop gradients to all tensors in the network
+      optimizer.step() # Update trainable weights
+    print("\n Epoch {} loss:{}".format(i+1,np.mean(running_loss)))
+
+    # Keep track of training loss, accuracy, and validation loss
+    trn_loss_hist.append(np.mean(running_loss))
+    trn_acc_hist.append(evaluate(model, trainloader))
+    print("\n Evaluate on validation set...")
+    val_acc_hist.append(evaluate(model, valloader))
+  print("Done!")
+  return trn_loss_hist, trn_acc_hist, val_acc_hist
+
+
+def evaluate(model, loader):
+  model.eval() # Set the model to evaluation mode
+  correct = 0
+  with torch.no_grad(): # Do not calculate grident to speed up computation
+    for batch, label in tqdm(loader):
+      batch = batch.to(device)
+      label = label.to(device)
+      pred = model(batch)
+      correct += (torch.argmax(pred,dim=1)==label).sum().item()
+    acc = correct/len(loader.dataset)
+    print("\n Evaluation accuracy: {}".format(acc))
+    return acc
+
+
 if __name__ == "__main__":
     # Set GPU or CPU
     if torch.cuda.is_available():
@@ -66,6 +109,7 @@ if __name__ == "__main__":
     args = init_arguments()
     transform = init_transform(args)
 
+    # Load Dataset
     dataset = ImageFolder(args.data_path, transform)
     dataloader =  torch.utils.data.DataLoader(dataset, batch_size=args.batch_size)
     for idx, data in enumerate(dataloader):
@@ -79,19 +123,30 @@ if __name__ == "__main__":
 
     original_data = torchvision.datasets.ImageFolder(args.data_path, transform)
 
-    
+    # Split data into train, val, test sets
+    tr = Subset(original_data, range(1000)) #TODO: adjust ranges
+    va = Subset(original_data, range(1000, 2000))
+    te = Subset(original_data, range(2000, 3000))
+    trainloader = DataLoader(tr, batch_size=args.batch_size, shuffle=True)
+    valloader = DataLoader(va, batch_size=args.batch_size, shuffle=False)
+    testloader = DataLoader(te, batch_size=args.batch_size, shuffle=False)
+
     # Initialize Model
     net = Colorizer().to(device)
     print("Model Summary:")
     summary(net, (1,128,128))
 
     # Define loss function, and optimizer
-    """
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(net.parameters(), lr=args.lr)
-    """
+    optimizer = torch.optim.Adam(net.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
     # Train
+    trn_loss_hist, trn_acc_hist, val_acc_hist = train(net, trainloader, 
+                                                  valloader, args.num_epochs)
+    # Evaluate
+    evaluate(net, testloader)
+
+    #TODO: set up checkpoints (optionally: early stopping, augmentation)
 
 
 class CustomDatasetRGB(torchvision.Dataset):
@@ -107,28 +162,6 @@ class CustomDatasetRGB(torchvision.Dataset):
 
     def __len__(self):
         return len(self.images)
-
-
-#load dataset
-#https://pytorch.org/vision/stable/datasets.html
-
-#model
-net = Colorizer().to(device)
-print("Model Summary:")
-summary(net, (1,128,128))
-
-# define loss function, and optimizer
-"""
-criterion = torch.nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
-"""
-
-#optional implementation details: checkpoints, early stopping (both increase speed)
-
-#train that shit 😤
-
-
-
 
 
 """
