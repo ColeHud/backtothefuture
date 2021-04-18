@@ -15,6 +15,7 @@ from torch.utils.data.dataset import Dataset
 # from colorizer import Colorizer
 import argparse
 from dataset import ImageFolder
+from checkpoint import *
 
 """
 # Set up optimization hyperparameters
@@ -140,6 +141,12 @@ if __name__ == "__main__":
     # Define loss function, and optimizer
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(net.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+
+    # Checkpoints
+    #model, start_epoch, stats = restore_checkpoint(model, config("cnn.checkpoint"))
+    #TODO: figure out config files, other loop for patience, stats variable
+    # Save model parameters
+    #save_checkpoint(model, epoch + 1, config("cnn.checkpoint"), stats)
 
     # Train
     trn_loss_hist, trn_acc_hist, val_acc_hist = train(net, trainloader, 
