@@ -16,6 +16,7 @@ from torch.utils.data.dataset import Dataset
 import argparse
 from dataset import ImageFolder
 from checkpoint import *
+from quantize import Bin_Converter
 
 """
 # Set up optimization hyperparameters
@@ -139,7 +140,7 @@ if __name__ == "__main__":
     summary(net, (1,128,128))
 
     # Define loss function, and optimizer
-    criterion = torch.nn.CrossEntropyLoss()
+    criterion = torch.nn.CrossEntropyLoss(weights=Bin_Converter.weights)
     optimizer = torch.optim.Adam(net.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
     # Checkpoints
