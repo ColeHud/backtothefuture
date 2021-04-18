@@ -124,9 +124,10 @@ if __name__ == "__main__":
     original_data = torchvision.datasets.ImageFolder(args.data_path, transform)
 
     # Split data into train, val, test sets
-    tr = Subset(original_data, range(1000)) #TODO: adjust ranges
-    va = Subset(original_data, range(1000, 2000))
-    te = Subset(original_data, range(2000, 3000))
+    # Currently 80, 10, 10 - can adjust
+    tr = Subset(original_data, range(4000))
+    va = Subset(original_data, range(4000, 4500))
+    te = Subset(original_data, range(4500, 5001))
     trainloader = DataLoader(tr, batch_size=args.batch_size, shuffle=True)
     valloader = DataLoader(va, batch_size=args.batch_size, shuffle=False)
     testloader = DataLoader(te, batch_size=args.batch_size, shuffle=False)
