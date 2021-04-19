@@ -25,7 +25,7 @@ class Bin_Converter():
     def convert_bin(self, image):
         # get the l2 difference between binned AB values and bins
         bin_image = np.zeros((image.shape[1], img.shape[2]))
-        print(bin_image.shape)
+        # print(bin_image.shape)
 
         for x in range(image.shape[1]):
             for y in range(image.shape[2]):
@@ -42,20 +42,21 @@ class Bin_Converter():
                 AB_image[1, x, y] = self.palette[image[x, y].astype(np.int64), 1]
         return AB_image
 
-test = Bin_Converter()
-img = plt.imread("cocostuff-2017/000000000139.jpg")
-img = color.rgb2lab(img).astype(np.float32)
-L_img = img[:, :, 0]
-print(img[:, :, 1])
-print(img[:, :, 2])
-img = np.dstack((img[:, :, 1], img[:, :, 2]))
-img = img.transpose(2, 0, 1)
-img = test.convert_bin(img)
-img = test.convert_AB(img)
-img = img.transpose(1, 2, 0)
-img = np.dstack((L_img, img[:, :, 0], img[:, :, 1]))
-img = (255 * np.clip(color.lab2rgb(img), 0, 1)).astype(np.uint8)
+if __name__ == "__main__":
+    test = Bin_Converter()
+    img = plt.imread("cocostuff-2017/000000000139.jpg")
+    img = color.rgb2lab(img).astype(np.float32)
+    L_img = img[:, :, 0]
+    print(img[:, :, 1])
+    print(img[:, :, 2])
+    img = np.dstack((img[:, :, 1], img[:, :, 2]))
+    img = img.transpose(2, 0, 1)
+    img = test.convert_bin(img)
+    img = test.convert_AB(img)
+    img = img.transpose(1, 2, 0)
+    img = np.dstack((L_img, img[:, :, 0], img[:, :, 1]))
+    img = (255 * np.clip(color.lab2rgb(img), 0, 1)).astype(np.uint8)
 
-print(img.shape)
-plt.imshow(img)
-plt.show()
+    print(img.shape)
+    plt.imshow(img)
+    plt.show()
