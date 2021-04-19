@@ -24,7 +24,7 @@ class Bin_Converter():
     # image is a numpy array CxHxW
     def convert_bin(self, image):
         # get the l2 difference between binned AB values and bins
-        bin_image = np.zeros((image.shape[1], img.shape[2]))
+        bin_image = np.zeros((image.shape[1], image.shape[2]))
         # print(bin_image.shape)
 
         for x in range(image.shape[1]):
@@ -35,7 +35,7 @@ class Bin_Converter():
         return bin_image
 
     def convert_AB(self, image):
-        AB_image = np.zeros((2, image.shape[0], img.shape[1]))
+        AB_image = np.zeros((2, image.shape[0], image.shape[1]))
         for x in range(image.shape[0]):
             for y in range(image.shape[1]):
                 AB_image[0, x, y] = self.palette[image[x, y].astype(np.int64), 0]

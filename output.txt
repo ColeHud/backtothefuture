@@ -1,16 +1,74 @@
+            Conv2d-1         [-1, 64, 128, 128]             640
+              ReLU-2         [-1, 64, 128, 128]               0
+            Conv2d-3           [-1, 64, 64, 64]          36,928
+              ReLU-4           [-1, 64, 64, 64]               0
+       BatchNorm2d-5           [-1, 64, 64, 64]             128
+            Conv2d-6          [-1, 128, 64, 64]          73,856
+              ReLU-7          [-1, 128, 64, 64]               0
+            Conv2d-8          [-1, 128, 32, 32]         147,584
+              ReLU-9          [-1, 128, 32, 32]               0
+      BatchNorm2d-10          [-1, 128, 32, 32]             256
+           Conv2d-11          [-1, 256, 32, 32]         295,168
+             ReLU-12          [-1, 256, 32, 32]               0
+           Conv2d-13          [-1, 256, 32, 32]         590,080
+             ReLU-14          [-1, 256, 32, 32]               0
+           Conv2d-15          [-1, 256, 34, 34]         590,080
+             ReLU-16          [-1, 256, 34, 34]               0
+      BatchNorm2d-17          [-1, 256, 34, 34]             512
+           Conv2d-18          [-1, 512, 34, 34]       1,180,160
+             ReLU-19          [-1, 512, 34, 34]               0
+           Conv2d-20          [-1, 512, 34, 34]       2,359,808
+             ReLU-21          [-1, 512, 34, 34]               0
+           Conv2d-22          [-1, 512, 34, 34]       2,359,808
+             ReLU-23          [-1, 512, 34, 34]               0
+      BatchNorm2d-24          [-1, 512, 34, 34]           1,024
+           Conv2d-25          [-1, 512, 32, 32]       2,359,808
+             ReLU-26          [-1, 512, 32, 32]               0
+           Conv2d-27          [-1, 512, 30, 30]       2,359,808
+             ReLU-28          [-1, 512, 30, 30]               0
+           Conv2d-29          [-1, 512, 28, 28]       2,359,808
+             ReLU-30          [-1, 512, 28, 28]               0
+      BatchNorm2d-31          [-1, 512, 28, 28]           1,024
+           Conv2d-32          [-1, 512, 26, 26]       2,359,808
+             ReLU-33          [-1, 512, 26, 26]               0
+           Conv2d-34          [-1, 512, 24, 24]       2,359,808
+             ReLU-35          [-1, 512, 24, 24]               0
+           Conv2d-36          [-1, 512, 22, 22]       2,359,808
+             ReLU-37          [-1, 512, 22, 22]               0
+      BatchNorm2d-38          [-1, 512, 22, 22]           1,024
+           Conv2d-39          [-1, 512, 22, 22]       2,359,808
+             ReLU-40          [-1, 512, 22, 22]               0
+           Conv2d-41          [-1, 512, 22, 22]       2,359,808
+             ReLU-42          [-1, 512, 22, 22]               0
+           Conv2d-43          [-1, 512, 22, 22]       2,359,808
+             ReLU-44          [-1, 512, 22, 22]               0
+      BatchNorm2d-45          [-1, 512, 22, 22]           1,024
+  ConvTranspose2d-46          [-1, 256, 44, 44]       2,097,408
+             ReLU-47          [-1, 256, 44, 44]               0
+           Conv2d-48          [-1, 256, 44, 44]         590,080
+             ReLU-49          [-1, 256, 44, 44]               0
+           Conv2d-50          [-1, 256, 44, 44]         590,080
+             ReLU-51          [-1, 256, 44, 44]               0
+           Conv2d-52          [-1, 313, 44, 44]          80,441
+
+
 Traceback (most recent call last):
-  File "train.py", line 77, in <module>
-    plt.imshow(torch.squeeze(rgb[0]))
-  File "D:\Anaconda3\envs\pytorch\lib\site-packages\matplotlib\pyplot.py", line 2684, in imshow
-    None else {}), **kwargs)
-  File "D:\Anaconda3\envs\pytorch\lib\site-packages\matplotlib\__init__.py", line 1599, in inner
-    return func(ax, *map(sanitize_sequence, args), **kwargs)
-  File "D:\Anaconda3\envs\pytorch\lib\site-packages\matplotlib\cbook\deprecation.py", line 369, in wrapper
-    return func(*args, **kwargs)
-  File "D:\Anaconda3\envs\pytorch\lib\site-packages\matplotlib\cbook\deprecation.py", line 369, in wrapper
-    return func(*args, **kwargs)
-  File "D:\Anaconda3\envs\pytorch\lib\site-packages\matplotlib\axes\_axes.py", line 5679, in imshow
-    im.set_data(X)
-  File "D:\Anaconda3\envs\pytorch\lib\site-packages\matplotlib\image.py", line 690, in set_data
-    .format(self._A.shape))
-TypeError: Invalid shape (3, 64, 64) for image data
+  File "train.py", line 147, in <module>
+    summary(net, (1,128,128))
+  File "D:\Anaconda3\envs\pytorch\lib\site-packages\torchsummary\torchsummary.py", line 72, in summary
+    model(*x)
+  File "D:\Anaconda3\envs\pytorch\lib\site-packages\torch\nn\modules\module.py", line 722, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "C:\Users\ntseng\Documents\EECS442\project\test.py", line 60, in forward
+    x = self.model(x)
+  File "D:\Anaconda3\envs\pytorch\lib\site-packages\torch\nn\modules\module.py", line 722, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "D:\Anaconda3\envs\pytorch\lib\site-packages\torch\nn\modules\container.py", line 117, in forward
+    input = module(input)
+  File "D:\Anaconda3\envs\pytorch\lib\site-packages\torch\nn\modules\module.py", line 722, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "D:\Anaconda3\envs\pytorch\lib\site-packages\torch\nn\modules\conv.py", line 419, in forward
+    return self._conv_forward(input, self.weight)
+  File "D:\Anaconda3\envs\pytorch\lib\site-packages\torch\nn\modules\conv.py", line 416, in _conv_forward
+    self.padding, self.dilation, self.groups)
+RuntimeError: Given groups=1, weight of size [64, 64, 3, 3], expected input[2, 1, 128, 128] to have 64 channels, but got 1 channels instead

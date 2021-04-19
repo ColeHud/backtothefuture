@@ -16,16 +16,12 @@ from tqdm import tqdm
 
 # helper function for Zhang et al. 2016 architecture structure - 2 CONV layers
 def make_block_2conv(layers, in_channels, out_channels):
-    layers.append(nn.Conv2d(in_channels, out_channels, 3, 1, 1))
-    layers.append(nn.ReLU(inplace=True))
     layers.append(nn.Conv2d(out_channels, out_channels, 3, 2, 1))
     layers.append(nn.ReLU(inplace=True))
     layers.append(nn.BatchNorm2d(out_channels))
 
 # helper function for Zhang et al. 2016 architecture structure - 3 CONV layers
 def make_block_3conv(layers, in_channels, out_channels, kernel_size=3, dilation=1, stride=1, padding=1):
-    layers.append(nn.Conv2d(in_channels, out_channels, kernel_size, dilation, 1, padding))
-    layers.append(nn.ReLU(inplace=True))
     layers.append(nn.Conv2d(out_channels, out_channels, kernel_size, dilation, 1, padding))
     layers.append(nn.ReLU(inplace=True))
     layers.append(nn.Conv2d(out_channels, out_channels, kernel_size, dilation, stride, padding))
@@ -39,23 +35,12 @@ class Colorizer(nn.Module):
         self.layers = []
         # in_channels, out_channels, kernel, stride, padding
 
-        # 1x128x128 -> 16x64x64
-        # 16x64x64 -> 32x64x64
-        # 32x64x64 -> 32x64x64
-        # 32x64x64 -> 64x32x32
-        
-
-        self.layers.append()
-
-
-
+        # self.layers.append()
 
         make_block_2conv(self.layers, 1, 64)
         make_block_2conv(self.layers, 64, 128)
         make_block_3conv(self.layers, 128, 256, 3, stride=2)
         make_block_3conv(self.layers, 256, 512, 3)
-        make_block_3conv(self.layers, 512, 512, 3, padding=2)
-        make_block_3conv(self.layers, 512, 512, 3, padding=2)
         make_block_3conv(self.layers, 512, 512, 3)
 
         self.layers.append(nn.ConvTranspose2d(512, 256, 4, 2, 1))

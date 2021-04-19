@@ -13,10 +13,13 @@ from torchvision import datasets, models
 from torchvision import transforms as transforms
 from torch.utils.data.dataset import Dataset
 # from colorizer import Colorizer
+from test import Colorizer
 import argparse
 from dataset import ImageFolder
-from checkpoint import *
+# from checkpoint import *
 from quantize import Bin_Converter
+from skimage import color
+from torchsummary import summary
 
 """
 # Set up optimization hyperparameters
@@ -29,8 +32,8 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate,
 
 def init_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_path', type=str, default='cocostuff-2017/')
-    parser.add_argument('--image_size', type=int, default=64)
+    parser.add_argument('--data_path', type=str, default='cocostuff-2017')
+    parser.add_argument('--image_size', type=int, default=128)
     parser.add_argument('--num_epochs', type=int, default=1000)
     parser.add_argument('--batch_size', type=int, default = 32)
     parser.add_argument('--lr', type=float, default=2e-4)
@@ -41,48 +44,48 @@ def init_arguments():
     parser.add_argument('--print_loss_freq', type=int, default = 10)
     return parser.parse_args()
 
+
+def train(model, trainloader, valloader, num_epoch, optimizer, device): # Train the model
+    print("Start training...")
+    trn_loss_hist = []
+    val_loss_hist = []
+    for i in range(num_epoch):
+        model.train()
+        running_loss = []
+        for idx, data in enumerate(trainloader):
+            optimizer.zero_grad()
+            L_img = data[0].to(device)
+            bin_img = data[1].to(device).long()
+            pred = model(L_img)
+            print(pred.shape, bin_img.shape)
+            loss = criterion(pred, bin_img)
+            running_loss.append(loss.item())
+            loss.backward()
+            optimizer.step()
+
+        model.eval()
+        running_val_loss = []
+        with torch.no_grad():
+            for idx, data in enumerate(valloader):
+                data.to(device)
+                L_img = data[0].to(device)
+                bin_img = data[1].to(device)
+                pred = model(L_img)
+                loss = criterion(pred, bin_img)
+                running_val_loss.append(loss)
+
+        print("\n Epoch {} train loss:{} val loss: {}".format(i + 1, np.mean(running_loss), np.mean(running_val_loss)))
+        trn_loss_hist.append(np.mean(running_loss))
+        val_loss_hist.append(np.mean(running_val_loss))
+    return trn_loss_hist, val_loss_hist
+
+
 def init_transform(args):
     # if we flip, then need to flip both
-    transform_grey = transforms.Compose([
-            transforms.Grayscale(num_output_channels=1),
-            transforms.Resize([args.image_size, args.image_size]),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=(0.5), std=(0.5))
+    transform = transforms.Compose([
+            transforms.ToTensor()
         ])
-    transform_RGB = transforms.Compose([
-            transforms.Resize([args.image_size, args.image_size]),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=(0.5,0.5,0.5), std=(0.5,0.5,0.5))
-        ])
-    return [transform_grey, transform_RGB]
-
-def train(model, trainloader, valloader, num_epoch = 10): # Train the model
-  print("Start training...")
-  trn_loss_hist = []
-  trn_acc_hist = []
-  val_acc_hist = []
-  model.train() # Set the model to training mode
-  for i in range(num_epoch):
-    running_loss = []
-    print('-----------------Epoch = %d-----------------' % (i+1))
-    for batch, label in tqdm(trainloader):
-      batch = batch.to(device)
-      label = label.to(device)
-      optimizer.zero_grad() # Clear gradients from the previous iteration
-      pred = model(batch) # This will call Network.forward() that you implement
-      loss = criterion(pred, label) # Calculate the loss
-      running_loss.append(loss.item())
-      loss.backward() # Backprop gradients to all tensors in the network
-      optimizer.step() # Update trainable weights
-    print("\n Epoch {} loss:{}".format(i+1,np.mean(running_loss)))
-
-    # Keep track of training loss, accuracy, and validation loss
-    trn_loss_hist.append(np.mean(running_loss))
-    trn_acc_hist.append(evaluate(model, trainloader))
-    print("\n Evaluate on validation set...")
-    val_acc_hist.append(evaluate(model, valloader))
-  print("Done!")
-  return trn_loss_hist, trn_acc_hist, val_acc_hist
+    return transform
 
 
 def evaluate(model, loader):
@@ -112,36 +115,43 @@ if __name__ == "__main__":
     transform = init_transform(args)
 
     # Load Dataset
+    bin_converter = Bin_Converter()
     dataset = ImageFolder(args.data_path, transform)
-    dataloader =  torch.utils.data.DataLoader(dataset, batch_size=args.batch_size)
-    for idx, data in enumerate(dataloader):
-        grey = data[0]
-        rgb = data[1]
-        plt.imshow(torch.squeeze(grey[0]), cmap='gray')
-        plt.show()
-        plt.imshow(rgb[0, 0, :, :], cmap='gray')
-        plt.show()
-        print(grey.shape)
+    train_set = Subset(dataset, range(4000))
+    val_set = Subset(dataset, range(4000, 4500))
+    test_set = Subset(dataset, range(4500, 5001))
+    trainloader = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size)
+    valloader = torch.utils.data.DataLoader(val_set, batch_size=args.batch_size)
 
-    original_data = torchvision.datasets.ImageFolder(args.data_path, transform)
-
-    # Split data into train, val, test sets
-    # Currently 80, 10, 10 - can adjust
-    tr = Subset(original_data, range(4000))
-    va = Subset(original_data, range(4000, 4500))
-    te = Subset(original_data, range(4500, 5001))
-    trainloader = DataLoader(tr, batch_size=args.batch_size, shuffle=True)
-    valloader = DataLoader(va, batch_size=args.batch_size, shuffle=False)
-    testloader = DataLoader(te, batch_size=args.batch_size, shuffle=False)
+    # code to check it loaded properly
+    # for idx, data in enumerate(valloader):
+    #     print(idx, data[0].shape)
+    #     print(idx, data[1].shape)
+    #     L_img = np.squeeze(np.array(data[0][0, :, :, :]))
+    #     test = np.array(data[1])
+    #     print(test.shape)
+    #     test = np.squeeze(test)
+    #     test = bin_converter.convert_AB(test[0, :, :])
+    #     img = test.transpose(1, 2, 0)
+    #     print(img.shape)
+    #     img = np.dstack((L_img * 100, img[:, :, 0], img[:, :, 1]))
+    #     print(img)
+    #     img = (255 * np.clip(color.lab2rgb(img), 0, 1)).astype(np.uint8)
+    #     print(img.shape)
+    #     plt.imshow(img)
+    #     plt.show()
 
     # Initialize Model
     net = Colorizer().to(device)
     print("Model Summary:")
     summary(net, (1,128,128))
 
-    # Define loss function, and optimizer
-    criterion = torch.nn.CrossEntropyLoss(weights=Bin_Converter.weights)
+    # # Define loss function, and optimizer
+    class_rebalancing = torch.tensor(bin_converter.weights, dtype=torch.float).to(device)
+    # print(class_rebalancing)
+    criterion = torch.nn.CrossEntropyLoss(weight=class_rebalancing)
     optimizer = torch.optim.Adam(net.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+
 
     # Checkpoints
     #model, start_epoch, stats = restore_checkpoint(model, config("cnn.checkpoint"))
@@ -150,13 +160,16 @@ if __name__ == "__main__":
     #save_checkpoint(model, epoch + 1, config("cnn.checkpoint"), stats)
 
     # Train
-    trn_loss_hist, trn_acc_hist, val_acc_hist = train(net, trainloader, 
-                                                  valloader, args.num_epochs)
+    trn_loss_hist, vaL_loss_hist = train(net, trainloader, valloader, args.num_epochs, optimizer, device)
     # Evaluate
-    evaluate(net, testloader)
+    # evaluate(net, testloader)
 
     #TODO: set up checkpoints (optionally: early stopping, augmentation)
 
+
+"""
+how to run on google collab
+https://towardsdatascience.com/google-colab-import-and-export-datasets-eccf801e2971
 
 class CustomDatasetRGB(torchvision.Dataset):
     def __init__(self, images):
@@ -173,7 +186,6 @@ class CustomDatasetRGB(torchvision.Dataset):
         return len(self.images)
 
 
-"""
 # Helper function
 def train_epoch(data_loader, model, criterion, optimizer):
     for i, (X, y) in enumerate(data_loader):
