@@ -12,8 +12,8 @@ from torch.utils.data import Subset, DataLoader
 from torchvision import datasets, models
 from torchvision import transforms as transforms
 from torch.utils.data.dataset import Dataset
-# from colorizer import Colorizer
-from test import Colorizer
+from colorizer import Colorizer
+# from test import Colorizer
 import argparse
 from dataset import ImageFolder
 # from checkpoint import *
@@ -32,20 +32,21 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate,
 
 def init_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_path', type=str, default='cocostuff-2017')
+    parser.add_argument('--data_path', type=str, default='celeba')
     parser.add_argument('--image_size', type=int, default=128)
-    parser.add_argument('--num_epochs', type=int, default=1000)
-    parser.add_argument('--batch_size', type=int, default = 32)
+    parser.add_argument('--num_epochs', type=int, default=100)
+    parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--lr', type=float, default=2e-4)
     parser.add_argument('--beta1', type=float, default=0.5)
     parser.add_argument('--beta2', type=float, default=0.999)
     parser.add_argument('--eps', type=float, default=1e-08)
     parser.add_argument('--weight_decay', type=float, default=1e-4)
-    parser.add_argument('--print_loss_freq', type=int, default = 10)
+    parser.add_argument('--print_loss_freq', type=int, default=10)
+    parser.add_argument('--checkpoint_freq', type=int, default=10)
     return parser.parse_args()
 
 
-def train(model, trainloader, valloader, num_epoch, optimizer, device): # Train the model
+def train(model, trainloader, valloader, num_epoch, optimizer, criterion, args, device): # Train the model
     print("Start training...")
     trn_loss_hist = []
     val_loss_hist = []
@@ -57,7 +58,12 @@ def train(model, trainloader, valloader, num_epoch, optimizer, device): # Train 
             L_img = data[0].to(device)
             bin_img = data[1].to(device).long()
             pred = model(L_img)
-            print(pred.shape, bin_img.shape)
+            # pred is NxCxHxW and C is 313
+            pred = pred.permute(0, 2, 3, 1).flatten(1, 2)
+            pred = pred.flatten(0, 1)
+            bin_img = bin_img.permute(0, 2, 3, 1).flatten(1, 2)
+            bin_img = bin_img.flatten(0, 1).squeeze()
+            # make into one long N*H*WxC vector for both and compare
             loss = criterion(pred, bin_img)
             running_loss.append(loss.item())
             loss.backward()
@@ -67,16 +73,28 @@ def train(model, trainloader, valloader, num_epoch, optimizer, device): # Train 
         running_val_loss = []
         with torch.no_grad():
             for idx, data in enumerate(valloader):
-                data.to(device)
                 L_img = data[0].to(device)
-                bin_img = data[1].to(device)
+                bin_img = data[1].to(device).long()
                 pred = model(L_img)
+                pred = pred.permute(0, 2, 3, 1).flatten(1, 2)
+                pred = pred.flatten(0, 1)
+                bin_img = bin_img.permute(0, 2, 3, 1).flatten(1, 2)
+                bin_img = bin_img.flatten(0, 1).squeeze()
                 loss = criterion(pred, bin_img)
-                running_val_loss.append(loss)
+                running_val_loss.append(loss.item())
 
-        print("\n Epoch {} train loss:{} val loss: {}".format(i + 1, np.mean(running_loss), np.mean(running_val_loss)))
-        trn_loss_hist.append(np.mean(running_loss))
-        val_loss_hist.append(np.mean(running_val_loss))
+        train_loss = np.mean(running_loss)
+        val_loss = np.mean(running_val_loss)
+        print("\nEpoch {} train loss:{} val loss: {}".format(i + 1, train_loss, val_loss))
+        trn_loss_hist.append(train_loss)
+        val_loss_hist.append(val_loss)
+
+        if (i+1) % args.checkpoint_freq == 0:
+            torch.save({'epoch': i,
+                        'model_state_dict': model.state_dict(),
+                        'optimizer_state_dict': optimizer.state_dict(),
+                        'loss': train_loss,
+                        }, 'checkpoints/model_'+str(i+1)+'.pt')
     return trn_loss_hist, val_loss_hist
 
 
@@ -124,7 +142,7 @@ if __name__ == "__main__":
     valloader = torch.utils.data.DataLoader(val_set, batch_size=args.batch_size)
 
     # code to check it loaded properly
-    # for idx, data in enumerate(valloader):
+    # for idx, data in enumerate(trainloader):
     #     print(idx, data[0].shape)
     #     print(idx, data[1].shape)
     #     L_img = np.squeeze(np.array(data[0][0, :, :, :]))
@@ -144,11 +162,13 @@ if __name__ == "__main__":
     # Initialize Model
     net = Colorizer().to(device)
     print("Model Summary:")
-    summary(net, (1,128,128))
+    summary(net, (1,64,64))
 
     # # Define loss function, and optimizer
     class_rebalancing = torch.tensor(bin_converter.weights, dtype=torch.float).to(device)
     # print(class_rebalancing)
+    # TODO:
+    # 1 / lambda+prior
     criterion = torch.nn.CrossEntropyLoss(weight=class_rebalancing)
     optimizer = torch.optim.Adam(net.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
@@ -160,7 +180,7 @@ if __name__ == "__main__":
     #save_checkpoint(model, epoch + 1, config("cnn.checkpoint"), stats)
 
     # Train
-    trn_loss_hist, vaL_loss_hist = train(net, trainloader, valloader, args.num_epochs, optimizer, device)
+    trn_loss_hist, vaL_loss_hist = train(net, trainloader, valloader, args.num_epochs, optimizer, criterion, args, device)
     # Evaluate
     # evaluate(net, testloader)
 

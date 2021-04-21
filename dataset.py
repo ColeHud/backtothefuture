@@ -40,7 +40,7 @@ class ImageFolder(data.Dataset):
         self.root = root
         self.imgs = imgs
         self.transform = transform
-        self.bin_hf = h5py.File('bin_data.h5', 'r')
+        self.bin_hf = h5py.File('bin_data_64.h5', 'r')
         self.L_hf = h5py.File('L_data.h5', 'r')
         self.AB_hf = h5py.File('AB_data.h5', 'r')
 
