@@ -1,7 +1,18 @@
-# backtothefuture
+## <b> Back to the Future: Image Colorization </b> ##
 The goal of this project is to implement image colorization using classification. We used a Convolutional Neural Network (CNN) model to perform this classification with various CONV layers using ReLU as an activation function. We trained our model using two datasets: celeb-a and flowers. We read the images in as LAB color and convert them into their respective quantized bins.
 
-Below is a description of each of the folders and files in our github:
+**Clone the repository**
+
+```
+git clone https://github.com/ColeHud/backtothefuture.git
+```
+
+**Colorize: Example of running code to colorize images with the given path**
+```
+python train.py --data_path 'celeba' --image_size 128 --num_epochs 50 --batch_size 8 --lr 1e-4 --weight_decay 1e-4
+```
+
+**Description of Files**
 
 zhang_palette: a folder including two numpy files containing prior probabilities and points in hull. These are used to convert to and from quantize bins to LAB color.
 
@@ -18,3 +29,34 @@ generate.py: a file used after training to evaluate the performance on our heldo
 quantize.py: a file that uses the palettes and weights from the Zhang paper in order to convert our images from LAB to binned values.
 
 train.py: a file that sets up the parameters read in from the command line that are used from training. Using these parameters, this file trains our CNN model using the data sets specified earlier. We investigated a variety of different losses: cross entropy without weights specified, cross entropy using the class rebalancing specified in the Zhang paper, and cross entropy with a normalization based off the color distribution for that data set. For all experimentation, we used the Adam optimizer.
+
+### Citations ###
+```
+. Cheng, Z., Yang, Q., Sheng, B.: Deep colorization. In: Proceedings of the IEEE
+International Conference on Computer Vision. (2015) 415–423
+
+@article{Cheng,
+  title={Deep colorization. In: Proceedings of the IEEE International Conference on Computer Vision},
+  author={Z. Cheng and Q. Yang and B. Sheng},
+  year={2015},
+  pages={415--423}
+
+}
+
+@inproceedings{zhang2016colorful,
+  title={Colorful Image Colorization},
+  author={Zhang, Richard and Isola, Phillip and Efros, Alexei A},
+  booktitle={ECCV},
+  year={2016}
+}
+
+@article{zhang2017real,
+  title={Real-Time User-Guided Image Colorization with Learned Deep Priors},
+  author={Zhang, Richard and Zhu, Jun-Yan and Isola, Phillip and Geng, Xinyang and Lin, Angela S and Yu, Tianhe and Efros, Alexei A},
+  journal={ACM Transactions on Graphics (TOG)},
+  volume={9},
+  number={4},
+  year={2017},
+  publisher={ACM}
+}
+```
