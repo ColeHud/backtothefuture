@@ -18,14 +18,29 @@ from skimage import color
 
 class Bin_Converter():
     def __init__(self):
-        self.palette = np.load("richzhang_palette/pts_in_hull.npy")
-        self.weights = np.load("richzhang_palette/prior_probs.npy")
+        self.palette = np.load("/content/drive/MyDrive/EECS442Group/richzhang_palette/pts_in_hull.npy")
+        # prior = np.load("/content/drive/MyDrive/EECS442Group/richzhang_palette/prior_probs.npy")
+
+        # add our own counts and divide to get prior probabilities
+        prior = np.load("/content/drive/MyDrive/EECS442Group/celeb_counts.npy")
+        prior[prior == 0] = 1
+        prior = prior / np.sum(prior)
+
+        # self.weights = 0.8 + prior 
+
+        lambda_ = 0.5
+        #Apply function for weights
+        uniform = np.zeros_like(prior)
+        uniform[prior > 0] = 1 / (prior > 0).sum()
+
+        self.weights = 1 / ((1 - lambda_) * prior + lambda_ * uniform)
+        self.weights /= np.sum(prior * self.weights)
+        # print("weights:", self.weights)
 
     # image is a numpy array CxHxW
     def convert_bin(self, image):
         # get the l2 difference between binned AB values and bins
         bin_image = np.zeros((image.shape[1], image.shape[2]))
-        # print(bin_image.shape)
 
         for x in range(image.shape[1]):
             for y in range(image.shape[2]):
@@ -42,9 +57,13 @@ class Bin_Converter():
                 AB_image[1, x, y] = self.palette[image[x, y].astype(np.int64), 1]
         return AB_image
 
+#quantize test data     
 if __name__ == "__main__":
+    
     test = Bin_Converter()
-    img = plt.imread("cocostuff-2017/000000000139.jpg")
+    """
+    #img = plt.imread("/content/drive/MyDrive/EECS442Group/cocostuff-2017/000000000139.jpg")
+    img = plt.imread("/content/drive/MyDrive/EECS442Group/celeba/000008.jpg")
     img = color.rgb2lab(img).astype(np.float32)
     L_img = img[:, :, 0]
     print(img[:, :, 1])
@@ -60,3 +79,4 @@ if __name__ == "__main__":
     print(img.shape)
     plt.imshow(img)
     plt.show()
+    """

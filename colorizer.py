@@ -37,7 +37,6 @@ class Colorizer(nn.Module):
         super(Colorizer, self).__init__()
 
         self.layers = []
-        # in_channels, out_channels, kernel, stride, padding
 
         make_block_2conv(self.layers, 1, 32)
         make_block_2conv(self.layers, 32, 64)
@@ -59,13 +58,9 @@ class Colorizer(nn.Module):
 
         self.layers.append(nn.Conv2d(64, 313, 1, 1, 0))
 
-        # add softmax and upsample stuff
-
         self.model = nn.Sequential(*self.layers)
 
     def forward(self, x):
         x = self.model(x)
-
-        # softmax stuff
 
         return x

@@ -21,15 +21,6 @@ from quantize import Bin_Converter
 from skimage import color
 from torchsummary import summary
 
-"""
-# Set up optimization hyperparameters
-learning_rate = 1e-2
-weight_decay = 1e-4
-num_epoch = 5  # TODO: Choose an appropriate number of training epochs
-optimizer = optim.Adam(model.parameters(), lr=learning_rate,
-                       weight_decay=weight_decay)
-"""
-
 def init_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str, default='celeba')
@@ -50,6 +41,10 @@ def train(model, trainloader, valloader, num_epoch, optimizer, criterion, args, 
     print("Start training...")
     trn_loss_hist = []
     val_loss_hist = []
+    # EXPERIMENTAL
+    mse_crit = nn.MSELoss()
+    priors = torch.tensor(np.load("/content/drive/MyDrive/EECS442Group/richzhang_palette/prior_probs.npy")).to(device)
+
     for i in range(num_epoch):
         model.train()
         running_loss = []
@@ -64,10 +59,21 @@ def train(model, trainloader, valloader, num_epoch, optimizer, criterion, args, 
             bin_img = bin_img.permute(0, 2, 3, 1).flatten(1, 2)
             bin_img = bin_img.flatten(0, 1).squeeze()
             # make into one long N*H*WxC vector for both and compare
-            loss = criterion(pred, bin_img)
+            # loss = criterion(pred, bin_img)
+            # EXPERIMENTAL
+            ce_loss = criterion(pred, bin_img)
+            # pred = torch.argmax(pred, axis=1)
+            # counts = torch.bincount(pred, minlength=313)
+            # counts = counts / torch.sum(counts)
+            counts = torch.sum(pred, axis=0, dtype=float)
+            counts /= torch.sum(counts)
+            mse_loss = mse_crit(counts, priors)
+            loss = 0.6*ce_loss + 0.4 * mse_loss
+            # END EXPERIMENTAL
             running_loss.append(loss.item())
             loss.backward()
             optimizer.step()
+            
 
         model.eval()
         running_val_loss = []
@@ -85,16 +91,25 @@ def train(model, trainloader, valloader, num_epoch, optimizer, criterion, args, 
 
         train_loss = np.mean(running_loss)
         val_loss = np.mean(running_val_loss)
-        print("\nEpoch {} train loss:{} val loss: {}".format(i + 1, train_loss, val_loss))
+        print("\nEpoch {} train loss: {} val loss: {}".format(i + 1, train_loss, val_loss))
         trn_loss_hist.append(train_loss)
         val_loss_hist.append(val_loss)
 
-        if (i+1) % args.checkpoint_freq == 0:
-            torch.save({'epoch': i,
-                        'model_state_dict': model.state_dict(),
-                        'optimizer_state_dict': optimizer.state_dict(),
-                        'loss': train_loss,
-                        }, 'checkpoints/model_'+str(i+1)+'.pt')
+        #SAVE CHECKPOINT every 10 iterations to EECS442Group in gdrive
+        """
+        if (i % 10) == 0:
+          save_checkpoint(i, model, np.mean(running_loss))
+        """
+        if (i+1) % args['checkpoint_freq'] == 0:
+          # CHANGE
+          experiment_number = '5'
+          torch.save({'epoch': i,
+                      'model_state_dict': model.state_dict(),
+                      'optimizer_state_dict': optimizer.state_dict(),
+                      'loss': train_loss,
+                      }, '/content/drive/MyDrive/EECS442Group/checkpoints/model_'+str(i+1)+'_'+experiment_number+'.pt')
+        #model_name should be model_epoch_idx.pt
+        
     return trn_loss_hist, val_loss_hist
 
 
@@ -119,6 +134,18 @@ def evaluate(model, loader):
     print("\n Evaluation accuracy: {}".format(acc))
     return acc
 
+def save_checkpoint(i,net,loss):
+    EPOCH = i
+    PATH = "model"+str(i)+".pt"
+    LOSS = loss
+
+    torch.save({
+                'epoch': EPOCH,
+                'model_state_dict': net.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'loss': LOSS,
+                }, PATH)
+
 
 if __name__ == "__main__":
     # Set GPU or CPU
@@ -141,108 +168,25 @@ if __name__ == "__main__":
     trainloader = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size)
     valloader = torch.utils.data.DataLoader(val_set, batch_size=args.batch_size)
 
-    # code to check it loaded properly
-    # for idx, data in enumerate(trainloader):
-    #     print(idx, data[0].shape)
-    #     print(idx, data[1].shape)
-    #     L_img = np.squeeze(np.array(data[0][0, :, :, :]))
-    #     test = np.array(data[1])
-    #     print(test.shape)
-    #     test = np.squeeze(test)
-    #     test = bin_converter.convert_AB(test[0, :, :])
-    #     img = test.transpose(1, 2, 0)
-    #     print(img.shape)
-    #     img = np.dstack((L_img * 100, img[:, :, 0], img[:, :, 1]))
-    #     print(img)
-    #     img = (255 * np.clip(color.lab2rgb(img), 0, 1)).astype(np.uint8)
-    #     print(img.shape)
-    #     plt.imshow(img)
-    #     plt.show()
-
     # Initialize Model
     net = Colorizer().to(device)
     print("Model Summary:")
     summary(net, (1,64,64))
 
-    # # Define loss function, and optimizer
+    #USE THIS IN THE EVENT OF A CRASH TO RETRIEVE MODEL
+    """
+    checkpoint = torch.load(PATH)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    epoch = checkpoint['epoch']
+    loss = checkpoint['loss']
+    """
+
+    # Define loss function, and optimizer
     class_rebalancing = torch.tensor(bin_converter.weights, dtype=torch.float).to(device)
-    # print(class_rebalancing)
-    # TODO:
-    # 1 / lambda+prior
+
     criterion = torch.nn.CrossEntropyLoss(weight=class_rebalancing)
-    optimizer = torch.optim.Adam(net.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-
-
-    # Checkpoints
-    #model, start_epoch, stats = restore_checkpoint(model, config("cnn.checkpoint"))
-    #TODO: figure out config files, other loop for patience, stats variable
-    # Save model parameters
-    #save_checkpoint(model, epoch + 1, config("cnn.checkpoint"), stats)
+    optimizer = torch.optim.Adam(net.parameters(), lr=args["lr"], weight_decay=args["weight_decay"])
 
     # Train
-    trn_loss_hist, vaL_loss_hist = train(net, trainloader, valloader, args.num_epochs, optimizer, criterion, args, device)
-    # Evaluate
-    # evaluate(net, testloader)
-
-    #TODO: set up checkpoints (optionally: early stopping, augmentation)
-
-
-"""
-how to run on google collab
-https://towardsdatascience.com/google-colab-import-and-export-datasets-eccf801e2971
-
-class CustomDatasetRGB(torchvision.Dataset):
-    def __init__(self, images):
-        self.images = images
-
-    def __getitem__(self, index):
-        rgb_image = cv2.imread(self.images[index], cv2.IMREAD_COLOR)
-        gray_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2GRAY)
-
-        rgb_image = np.transpose(rgb_image, axes=(2, 0, 1))
-        return torch.from_numpy(rgb_image), torch.from_numpy(gray_image)
-
-    def __len__(self):
-        return len(self.images)
-
-
-# Helper function
-def train_epoch(data_loader, model, criterion, optimizer):
-    for i, (X, y) in enumerate(data_loader):
-        inputs, labels = X, y
-
-        optimizer.zero_grad()
-
-        outputs = model(inputs) # Forward Pass
-        loss = criterion(outputs, labels) # Loss
-        loss.backward() # Backward Pass
-        optimizer.step() # Update Weights
-"""
-
-"""
-patience = 5
-curr_patience = 0
-#
-
-# Loop over the entire dataset multiple times
-# for epoch in range(start_epoch, config('cnn.num_epochs')):
-epoch = start_epoch
-while curr_patience < patience:
-    # Train model
-    train_epoch(tr_loader, model, criterion, optimizer)
-
-    # Evaluate model
-    evaluate_epoch(
-        axes, tr_loader, va_loader, te_loader, model, criterion, epoch + 1, stats
-    )
-
-    # Save model parameters
-    #save_checkpoint(model, epoch + 1, config("cnn.checkpoint"), stats)
-
-    # update early stopping parameters
-    #curr_patience, prev_val_loss = early_stopping(
-    #    stats, curr_patience, prev_val_loss
-    #)
-
-    epoch += 1
-"""
+    trn_loss_hist, val_loss_hist = train(net, trainloader, valloader, args['num_epochs'], optimizer, criterion, args, device)

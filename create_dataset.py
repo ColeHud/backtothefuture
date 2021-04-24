@@ -47,16 +47,6 @@ if __name__ == "__main__":
         # bin_hf.create_dataset(image_path, data=bin_img)
         bin_hf_64.create_dataset(image_path, data=bin_img)
 
-
-
-        # print(image_path)
-        # data = L_hf.get(image_path)
-        # print(data)
-        # data2 = bin_hf.get(image_path)
-        # print(data2)
-        # arr = np.array(data)
-        # arr2 = np.array(data2)
-        # print(arr, arr2)
         print(counter)
         counter += 1
         if counter == 10000:
