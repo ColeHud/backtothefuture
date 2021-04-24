@@ -1,6 +1,8 @@
 ## <b> Back to the Future: Image Colorization </b> ##
 The goal of this project is to implement image colorization using classification. We used a Convolutional Neural Network (CNN) model to perform this classification with various CONV layers using ReLU as an activation function. We trained our model using two datasets: celeb-a and flowers. We read the images in as LAB color and convert them into their respective quantized bins.
 
+The majority of this implementation was from scratch, however ideas were borrowed from Zhang et al.'s paper for the architecture structure and loss components. Additionally, we borrowed ideas from Time0o's github to add to our loss function. Both of these sources are highlighted in citations.
+
 **Clone the repository; install dataset**
 
 ```
@@ -20,6 +22,8 @@ python train.py --data_path 'celeba' --image_size 128 --num_epochs 50 --batch_si
 
 **colorizer.py**: a file that contains the architecture for our model under the class name Colorizer.
 
+**colorizer.ipynb**: a file containing code from colorizer.py, generate.py, and train.py which can fully load the data from the h5 files, train, and evaluate the model in Google Colab.
+
 **create_dataset.py**: a file that is used upon initialization to create the h5 files so that we don't have to load the large datasets every time.
 
 **dataset.py**: a file that loads the images from the h5 files to be used for classification.
@@ -32,6 +36,12 @@ python train.py --data_path 'celeba' --image_size 128 --num_epochs 50 --batch_si
 
 ### Citations ###
 ```
+@article{Time0o,
+  title={pytorch-colorful-colorization},
+  author={Time0o},
+  year={2020}
+}
+
 @article{Cheng,
   title={Deep colorization. In: Proceedings of the IEEE International Conference on Computer Vision},
   author={Z. Cheng and Q. Yang and B. Sheng},
