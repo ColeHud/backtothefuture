@@ -32,9 +32,6 @@ train.py: a file that sets up the parameters read in from the command line that 
 
 ### Citations ###
 ```
-. Cheng, Z., Yang, Q., Sheng, B.: Deep colorization. In: Proceedings of the IEEE
-International Conference on Computer Vision. (2015) 415–423
-
 @article{Cheng,
   title={Deep colorization. In: Proceedings of the IEEE International Conference on Computer Vision},
   author={Z. Cheng and Q. Yang and B. Sheng},
