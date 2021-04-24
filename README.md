@@ -1,6 +1,8 @@
 # backtothefuture
 The goal of this project is to implement image colorization using classification. We used a Convolutional Neural Network (CNN) model to perform this classification with various CONV layers using ReLU as an activation function. We trained our model using two datasets: celeb-a and flowers. We read the images in as LAB color and convert them into their respective quantized bins.
 
+Below is a description of each of the folders and files in our github:
+
 zhang_palette: a folder including two numpy files containing prior probabilities and points in hull. These are used to convert to and from quantize bins to LAB color.
 
 .gitignore: a file used to ignore different folders and files when pushing to github. The files we ignore are the datasets and the h5 files which contain the quantized bins.
