@@ -14,6 +14,12 @@ git clone https://github.com/ColeHud/backtothefuture.git
 python train.py --data_path 'celeba' --image_size 128 --num_epochs 50 --batch_size 8 --lr 1e-4 --weight_decay 1e-4
 ```
 
+**Example Output**
+
+![Back to the Future](https://github.com/ColeHud/backtothefuture/blob/main/bttf.gif)
+
+Above is an example of our model output merging different colorized frames from the movie "Back to the Future". This image displays the results of taking black and white images from the original movie, feeding them into our model which outputs the colorized version.
+
 **Description of Files**
 
 **zhang_palette**: a folder including two numpy files containing prior probabilities and points in hull. These are used to convert to and from quantize bins to LAB color.
