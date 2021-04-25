@@ -36,6 +36,12 @@ python train.py --data_path 'celeba' --image_size 128 --num_epochs 50 --batch_si
 
 ### Citations ###
 ```
+@article{junyanz,
+  title={pytorch-CycleGAN-and-pix2pix},
+  author={junyanz},
+  year={2020}
+}
+
 @article{Time0o,
   title={pytorch-colorful-colorization},
   author={Time0o},
