@@ -1,7 +1,7 @@
 ## <b> Back to the Future: Image Colorization </b> ##
 The goal of this project is to implement image colorization using classification. We used a Convolutional Neural Network (CNN) model to perform this classification with various CONV layers using ReLU as an activation function. We trained our model using two datasets: celeb-a and flowers. We read the images in as LAB color and convert them into their respective quantized bins.
 
-The majority of this implementation was from scratch, however ideas were borrowed from Zhang et al.'s paper for the architecture structure and loss components. Additionally, we borrowed ideas from Time0o's github to add to our loss function. Both of these sources are highlighted in citations.
+The majority of this implementation was from scratch, however ideas were borrowed from Zhang et al.'s paper for the architecture structure and loss components. Additionally, we borrowed weighting code from Time0o's github to add to convert weights to priors. Both of these sources are highlighted in citations and commented in our code.
 
 **Clone the repository; install dataset**
 
