@@ -16,7 +16,7 @@ python train.py --data_path 'celeba' --image_size 128 --num_epochs 50 --batch_si
 
 **Example Output**
 
-![Back to the Future](https://github.com/ColeHud/backtothefuture/blob/main/bttf.gif)
+<img src="https://github.com/ColeHud/backtothefuture/blob/main/bttf.gif" width="200">
 
 Above is an example of our model output merging different colorized frames from the movie "Back to the Future". This image displays the results of taking black and white images from the original movie, feeding them into our model which outputs the colorized version.
 
