@@ -9,6 +9,7 @@ The majority of this implementation was from scratch, however ideas were borrowe
 git clone https://github.com/ColeHud/backtothefuture.git
 ```
 
+Note: to preprocess data, checkout create_dataset.py and run on the downloaded dataset before running training.
 **Colorize: Example of running code to colorize images with the given path**
 ```
 python train.py --data_path 'celeba' --image_size 128 --num_epochs 50 --batch_size 8 --lr 1e-4 --weight_decay 1e-4
