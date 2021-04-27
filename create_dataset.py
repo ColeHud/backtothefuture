@@ -10,10 +10,10 @@ from skimage import color
 
 
 if __name__ == "__main__":
-    # bin_hf = h5py.File('bin_data.h5', 'w')
-    # bin_hf_64 = h5py.File('bin_data_64.h5', 'w')
-    # L_hf = h5py.File('L_data.h5', 'w')
-    # AB_hf = h5py.File('AB_data.h5', 'w')
+    bin_hf = h5py.File('bin_data.h5', 'w')
+    bin_hf_64 = h5py.File('bin_data_64.h5', 'w')
+    L_hf = h5py.File('L_data.h5', 'w')
+    AB_hf = h5py.File('AB_data.h5', 'w')
 
     # bin_hf = h5py.File('bin_data_128.h5', 'r')
     # L_hf = h5py.File('L_data.h5', 'r')
