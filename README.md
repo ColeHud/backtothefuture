@@ -3,13 +3,13 @@ The goal of this project is to implement image colorization using classification
 
 The majority of this implementation was from scratch, however ideas were borrowed from Zhang et al.'s paper for the architecture structure and loss components. Additionally, we borrowed weighting code from Time0o's github to add to convert weights to priors. Finally, we built on top of Junyanz' Pix2Pix dataloader to produce L and quantized binned outputs for each image. All sources are highlighted in citations and commented in our code.
 
-**Clone the repository; install dataset**
+**Clone the repository; install datasets separately**
 
 ```
 git clone https://github.com/ColeHud/backtothefuture.git
 ```
 
-Note: to preprocess data, checkout create_dataset.py and run on the downloaded dataset before running training.
+Note: to preprocess data, checkout create_dataset.py and run on the downloaded dataset before running training. The pathnames stored in the h5 file could change depending on Windows or Linux with the forward/backslash
 
 
 **Colorize: Example of running code to colorize images with the given path**
