@@ -37,7 +37,7 @@ Above is an example of our model output merging different colorized frames from 
 
 **dataset.py**: a file that loads the images from the h5 files to be used for classification.
 
-**generate.py**: a file used after training to evaluate the performance on our heldout test set. This  process uses SSIM and PSNR as metrics for evaluation. Additionally, we use an average across the x best classifications for a given pixel.
+**generate.py**: a file used after training to evaluate the performance on our heldout test set. In the python file, it visualizes the image. On the fully trained model in our ipynb, we also gather SSIM and PSNR as metrics for evaluation. Additionally, we use an average across the top-k best classifications for a given pixel.
 
 **quantize.py**: a file that uses the palettes and weights from the Zhang paper in order to convert our images from LAB to binned values.
 
